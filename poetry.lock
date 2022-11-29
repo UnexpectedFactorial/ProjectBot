@@ -52,6 +52,21 @@ tests = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)"
 tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "mypy (>=0.900,!=0.940)", "pytest-mypy-plugins", "cloudpickle"]
 
 [[package]]
+name = "beautifulsoup4"
+version = "4.11.1"
+description = "Screen-scraping library"
+category = "main"
+optional = false
+python-versions = ">=3.6.0"
+
+[package.dependencies]
+soupsieve = ">1.2"
+
+[package.extras]
+html5lib = ["html5lib"]
+lxml = ["lxml"]
+
+[[package]]
 name = "certifi"
 version = "2022.9.24"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -96,6 +111,17 @@ description = "An implementation of the Debug Adapter Protocol for Python"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
+
+[[package]]
+name = "discord"
+version = "2.1.0"
+description = "A mirror package for discord.py. Please install that instead."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+"discord.py" = ">=2.1.0"
 
 [[package]]
 name = "discord.py"
@@ -394,6 +420,14 @@ doc = ["sphinx-rtd-theme (>=1.0.0)", "sphinx-autodoc-typehints (>=1.18.1)", "sph
 dev = ["build (>=0.7.0)", "pytest-timeout (>=2.1.0)", "pytest (>=7.0.1)"]
 
 [[package]]
+name = "soupsieve"
+version = "2.3.2.post1"
+description = "A modern CSS selector implementation for Beautiful Soup."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -495,18 +529,20 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8.0,<3.9"
-content-hash = "01e816d190a2b6bca0c2eb91e1c05bb0cb1f5580c5982829216de6d07a2d3c7f"
+content-hash = "fc5c0321b11d398bd6c69ae2185721b34470927688e7b59ef7779465faeb4f39"
 
 [metadata.files]
 aiohttp = []
 aiosignal = []
 async-timeout = []
 attrs = []
+beautifulsoup4 = []
 certifi = []
 charset-normalizer = []
 click = []
 colorama = []
 debugpy = []
+discord = []
 "discord.py" = []
 flask = []
 frozenlist = []
@@ -529,6 +565,7 @@ replit = []
 replit-python-lsp-server = []
 requests = []
 rope = []
+soupsieve = []
 toml = []
 tomli = []
 typing-extensions = []
