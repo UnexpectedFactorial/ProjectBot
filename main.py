@@ -48,8 +48,7 @@ def run():
     await ctx.send(f"**We are now scraping from:** {site.title.string}")
 
     for div in site.find_all('div', class_='mw-body-content mw-content-ltr'):
-      for div in site.find_all('div', class_='mw-body-content mw-content-ltr'):
-        await ctx.send(site.find_all('p')[1].text)
+      await ctx.send(site.find_all('p')[1].text)
 
   @bot.command()
   async def dog(ctx):
