@@ -2,6 +2,7 @@ import os
 import settings
 import discord
 import requests  #for requests.get
+from PyDictionary import PyDictionary
 from discord.ext import commands
 
 from bs4 import BeautifulSoup
@@ -37,13 +38,18 @@ def run():
     await ctx.send(word)
 
   @bot.command()
-  async def scrape(ctx, *, site):
-    print(site)
-    page = urlopen(site)
+  async def wikiscrape(ctx, *, query):
+    print(query)
+    page = urlopen(f"https://en.wikipedia.org/wiki/{query}")
+    print(page)
     html = page.read().decode("utf-8", "ignore")
-    pullData = BeautifulSoup(html, "html.parser")
+    site = BeautifulSoup(html, "html.parser")
 
-    await ctx.send(f"**We are now scraping from:** {pullData.title.string}")
+    await ctx.send(f"**We are now scraping from:** {site.title.string}")
+
+    for div in site.find_all('div', class_='mw-body-content mw-content-ltr'):
+      for div in site.find_all('div', class_='mw-body-content mw-content-ltr'):
+        await ctx.send(site.find_all('p')[1].text)
 
   @bot.command()
   async def dog(ctx):
@@ -62,8 +68,24 @@ def run():
     Temp = f"It is currently {res['current']['temp_c']} degrees right now and {res['current']['condition']['text']} in {place}."
     await ctx.send(Temp)
 
-  bot.run(token, root_logger=True)
+  @bot.command()
+  async def wiki(ctx, *, arg):
+    arg = arg.replace(' ', '_').replace('  ', '_')
+    print(arg)
+    await ctx.send(f'https://en.wikipedia.org/wiki/{arg}')
 
+  @bot.command()
+  async def google(ctx, *, arg):
+    arg = arg.replace(' ', '_').replace('  ', '_')
+    await ctx.send(f"https://www.google.com/search?q={arg}")
+  
+  @bot.command()
+  async def define(ctx, *, arg):
+    dictionary = PyDictionary()
+    result = dictionary.meaning(arg)
+    await ctx.send(f"{result}")
+  
+  bot.run(token, root_logger=True)
 
 if __name__ == "__main__":
   run()
