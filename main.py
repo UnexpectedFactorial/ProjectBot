@@ -15,9 +15,8 @@ logger = settings.logging.getLogger("bot")
 
 
 def run():
-  intents = discord.Intents.default()
-  intents.all = True
-
+  intents = discord.Intents.all()
+  
   bot = commands.Bot(command_prefix="#", intents=intents)
 
   @bot.event
@@ -33,7 +32,7 @@ def run():
 
   @bot.event
   async def on_member_join(member):
-    defaultrole = discord.utils.get(member.guild.roles, id="default")
+    defaultrole = discord.utils.get(member.guild.roles, name="default")
     await member.add_roles(defaultrole)
 
   @bot.command()
