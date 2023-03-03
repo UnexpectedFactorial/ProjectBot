@@ -539,6 +539,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "wikipedia-api"
+version = "0.5.8"
+description = "Python Wrapper for Wikipedia"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+requests = "*"
+
+[[package]]
 name = "yapf"
 version = "0.32.0"
 description = "A formatter for Python code."
@@ -573,7 +584,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8.0,<3.9"
-content-hash = "d1dc021af303c6134b4d2a25f9afbc70129c1b9ebf958a404afa55d38e10fb67"
+content-hash = "fc6aff2ff0d2217328dafcfd94232a0a8a87f94b056ed4385f5c4477b0e5a609"
 
 [metadata.files]
 aiohttp = []
@@ -621,6 +632,7 @@ ujson = []
 urllib3 = []
 werkzeug = []
 whatthepatch = []
+wikipedia-api = []
 yapf = []
 yarl = []
 zipp = []

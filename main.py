@@ -2,6 +2,7 @@ import os
 import settings
 import discord
 import requests  #for requests.get
+import wikipediaapi # for wiki
 from PyDictionary import PyDictionary
 from discord.ext import commands
 
@@ -34,6 +35,21 @@ def run():
   async def on_member_join(member):
     defaultrole = discord.utils.get(member.guild.roles, name="default")
     await member.add_roles(defaultrole)
+
+  @bot.event  #self-assign reaction
+  async def on_reaction_add(reaction, user):
+    message = reaction.message
+    if message.id == 1079854132816519189:
+      guild = message.guild
+      roles_dict = { #"Emotename": "Rolename"
+        ":red_square:": "red",
+        ":green_square:": "green",
+        ":blue_square:": "blue"
+      }
+      role_name = roles_dict.get(str(reaction.emoji))
+      if role_name is not None:
+        role = discord.utils.get(guild.roles, name=role_name)
+        await user.add_roles(role)
 
   @bot.command()
   async def repeat(ctx, *, word):
@@ -78,9 +94,12 @@ def run():
 
   @bot.command()
   async def wiki(ctx, *, arg):
-    arg = arg.replace(' ', '_').replace('  ', '_')
     print(arg)
-    await ctx.send(f'https://en.wikipedia.org/wiki/{arg}')
+    wiki = wikipediaapi.Wikipedia('en')
+    result = wiki.page(arg)
+    await ctx.send("Searched Term: %s" % result.title)
+    await ctx.send("Summary: %s" % result.summary)
+    await ctx.send("Link to Page: %s" % result.fullurl)
 
   @bot.command()
   async def google(ctx, *, arg):
