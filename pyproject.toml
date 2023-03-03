@@ -17,6 +17,8 @@ aiohttp = "^3.8.3"
 bs4 = "^0.0.1"
 PyDictionary = "^2.0.1"
 Wikipedia-API = "^0.5.8"
+certifi = "^2022.12.7"
+Werkzeug = "^2.2.3"
 
 [tool.poetry.dev-dependencies]
 debugpy = "^1.6.2"
