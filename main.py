@@ -31,6 +31,8 @@ def run():
   async def ping(ctx):
     await ctx.send("I am Alive")
 
+#administrative commands
+
   @bot.event
   async def on_member_join(member):
     defaultrole = discord.utils.get(member.guild.roles, name="default")
@@ -50,6 +52,52 @@ def run():
       if role_name is not None:
         role = discord.utils.get(guild.roles, name=role_name)
         await user.add_roles(role)
+
+  @bot.command()
+  async def purge(ctx, amount= 10):
+    await ctx.channel.purge(limit=amount+1)
+    await ctx.send(f'{amount} messages successfully purged')
+
+  def perms(**perms):
+    async def predicate(ctx):
+
+      #checks admin role
+      if ctx.author.guild_permissions.administrator:
+        return True
+        
+      #checks  other role perms
+      for role in ctx.author.roles:
+        if role.permissions_in(ctx.channel).**perms:
+          return True
+          
+      #role has no perms
+      raise commands.Missing.Permissions(perms):
+    return commands.check(predicate)
+    
+
+  @bot.command()
+  @perms(kick_members=True)
+  async def kick(ctx, member: discord.Member):
+    await member.kick()
+    await ctx.send(f"{member} has been kicked.")
+
+  @bot.command()
+  @perms(ban_members=True)
+  async def ban(ctx, member: discord.Member):
+    await member.ban()
+    await ctx.send(f"{member} has been banned.")
+
+  @bot.command()
+  @perms(add_roles=True)
+    async def mute(ctx, member: discord.Member): #checks for muted role and creates if doesn't exist
+      role = discord.utils.get(ctx.guild.roles, name="Muted") 
+      if not role: 
+          role = await ctx.guild.create_role(name="Muted") 
+          for channel in ctx.guild.channels:
+            await channel.set_permissions(role, send_messages=False)
+
+      await member.add_roles(role)
+      await ctx.send(f"{member} has been muted.")
 
   @bot.command()
   async def repeat(ctx, *, word):
