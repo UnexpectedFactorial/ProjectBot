@@ -3,10 +3,12 @@ import settings
 import discord
 import requests  #for requests.get
 import wikipediaapi # for wiki
+
 from PyDictionary import PyDictionary
 from discord.ext import commands
-
 from bs4 import BeautifulSoup
+
+from webScraping import Wiki
 
 token = os.environ['TOKEN']  #discord bot token
 
@@ -106,22 +108,9 @@ def run():
 
   @bot.command()
   async def wikiscrape(ctx, *, query):
-    print(query)
-    page = requests.get(f"https://en.wikipedia.org/wiki/{query}")
-    print(page)
-    site = BeautifulSoup(page.content, "html.parser")
-
-    await ctx.send(f"**We are now scraping from:** {site.title.string}")
-    if page.status_code == 200:
-      if site.find_all("div", {"class": "mw-body-content mw-content-ltr"}):
-        for div in site.find_all('div', class_='mw-body-content mw-content-ltr'):
-          await ctx.send(site.find_all('p')[1].text)
-          
-    elif page.status_code == 404:
-      await ctx.send("Sorry, we couldn't find any response. Check your spelling?")
-
-    else:
-      await ctx.send("Connection error! Please try again later.")
+    userInput = f"https://en.wikipedia.org/wiki/{query}"
+    input = Wiki(userInput)
+    input.scrapeFromWiki()
 
   @bot.command()
   async def dog(ctx):
