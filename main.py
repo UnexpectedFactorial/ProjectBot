@@ -56,7 +56,7 @@ def run():
         await user.add_roles(role)
 
   @bot.command()
-  async def purge(ctx, amount= 10):
+  async def purge(ctx, amount=10):
     await ctx.channel.purge(limit=amount+1)
     await ctx.send(f'{amount} messages successfully purged')
 
@@ -69,11 +69,11 @@ def run():
         
       #checks  other role perms
       for role in ctx.author.roles:
-        if role.permissions_in(ctx.channel).**perms:
+        if role.permissions_in(ctx.channel).manage_channels:
           return True
           
       #role has no perms
-      raise commands.Missing.Permissions(perms):
+      raise commands.Missing.Permissions(perms)
     return commands.check(predicate)
     
 
@@ -91,7 +91,7 @@ def run():
 
   @bot.command()
   @perms(add_roles=True)
-    async def mute(ctx, member: discord.Member): #checks for muted role and creates if doesn't exist
+  async def mute(ctx, member: discord.Member): #checks for muted role and creates if doesn't exist
       role = discord.utils.get(ctx.guild.roles, name="Muted") 
       if not role: 
           role = await ctx.guild.create_role(name="Muted") 
@@ -110,7 +110,7 @@ def run():
   async def wikiscrape(ctx, *, query):
     userInput = f"https://en.wikipedia.org/wiki/{query}"
     input = Wiki(userInput)
-    input.scrapeFromWiki()
+    await ctx.send(input.scrapeFromWiki())
 
   @bot.command()
   async def dog(ctx):
