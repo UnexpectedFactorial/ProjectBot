@@ -107,10 +107,26 @@ def run():
     await ctx.send(word)
 
   @bot.command()
-  async def wikiscrape(ctx, *, query):
+  async def wikiscrape(ctx, *, query="wikipedia"):
     userInput = f"https://en.wikipedia.org/wiki/{query}"
     input = Wiki(userInput)
-    await ctx.send(input.scrapeFromWiki())
+    result = input.scrapeFromWiki(query)
+    
+    if isinstance(result, list):
+      await ctx.send(result)
+    else:
+      await ctx.send(result)
+
+  @bot.command()
+  async def wikisearch(ctx, *, input):
+    argList = input.split(",")
+    arg1 = argList[0]
+    arg2 = argList[1]
+    if len(argList) == 2:
+      await ctx.send(arg1)
+      await ctx.send(arg2)
+    else:
+      await ctx.send("Please only enter 2 arguments")
 
   @bot.command()
   async def dog(ctx):
