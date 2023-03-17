@@ -120,11 +120,24 @@ def run():
   @bot.command()
   async def wikisearch(ctx, *, input):
     argList = input.split(",")
-    arg1 = argList[0]
-    arg2 = argList[1]
+    wikiInput = argList[0]
+    searchTerm = argList[1]
     if len(argList) == 2:
-      await ctx.send(arg1)
-      await ctx.send(arg2)
+      if (wikiInput == searchTerm):
+        
+        await ctx.send("Nice try. Please search for another word other than the article.")
+        
+      else:
+        userInput = f"https://en.wikipedia.org/wiki/{wikiInput}"
+        input = Wiki(userInput)
+        result = input.wikiSearch(searchTerm)
+
+        if result:
+          for x in result:
+            await ctx.send(x)
+        else:
+          await ctx.send("No Results Found")
+        
     else:
       await ctx.send("Please only enter 2 arguments")
 

@@ -41,6 +41,17 @@ class Wiki(Scrape):
        return("It looks like you hit one of the bugged words. Unfortunately, one of our libraries did not parse your input properly and threw an error.")
     
   def wikiSearch(self,searchTerm):
-    pass
+    results = []
+    prefilter = self.site.findAll('p')
+    for p in prefilter:
+        if searchTerm in p.getText():
+            results.append(p.getText())
+    formatted = []
+    for x in results:
+        format = x.replace(searchTerm,f"__***{searchTerm}***__")
+        formatted.append(format)
+
+    return formatted
+    
 
     
