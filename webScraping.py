@@ -12,7 +12,6 @@ class Scrape:
     
   def headerCheck(self): #verifies site header in case page doesnt exist or any other server error
     page = requests.get(self.url,headers=self.header)
-    print (page.status_code)
     return page.status_code
     
 
@@ -52,6 +51,58 @@ class Wiki(Scrape):
         formatted.append(format)
 
     return formatted
-    
 
-    
+class Steam(Scrape):
+  def initialCheck(self):
+      headerCheck = self.headerCheck()
+      if headerCheck == 200:
+         try:
+          return(self.SteamAnalyze())
+         except AttributeError:
+           return("Unfortunately, due to an interaction between BeautifulSoup and the registered trademark unicode, we are unable to analyze this game.")
+      elif headerCheck == 404:
+          return("Game not found! Please check your link again.")
+      else:
+          return("Something happened that wasn't supposed to! Please try again later.")
+
+  def SteamAnalyze(self):
+
+      if self.SaleCheck():
+        gameName = self.site.find('div', class_="apphub_AppName").get_text()
+        discountedPrice = self.site.find('div', class_="discount_final_price").string
+        discountedPrice = discountedPrice.strip().replace('\t', '').replace('\n', '')
+        origPrice = self.site.find('div', class_="discount_original_price").string
+        discPercent = self.site.find('div', class_="discount_pct").string + " off"
+        onSale = self.SaleCheck()
+        gameRating = self.site.find('span', class_="game_review_summary").string
+        gameRatingNumber = self.site.find('span', class_="responsive_hidden").string
+        gameRatingNumber = gameRatingNumber.strip().replace('\t', '').replace('\n', '')
+        gameRating = gameRating + f" based off of {gameRatingNumber} ratings"
+        thumbnail = self.site.find('img',class_="game_header_image_full")
+
+        results = [onSale, thumbnail['src'],gameName, origPrice,discPercent, discountedPrice, gameRating]
+        return results
+      else:
+
+        gameName = self.site.find('div', class_="apphub_AppName").get_text()
+        gamePrice = self.site.find('div',class_="game_purchase_price price").string
+        gamePrice = gamePrice.strip().replace('\t', '').replace('\n', '')
+        onSale = self.SaleCheck()
+        gameRating = self.site.find('span', class_="game_review_summary").string
+        gameRatingNumber = self.site.find('span', class_="responsive_hidden").string
+        gameRatingNumber = gameRatingNumber.strip().replace('\t', '').replace('\n', '')
+        gameRating = gameRating + f" based off of {gameRatingNumber} ratings"
+        thumbnail = self.site.find('img',class_="game_header_image_full")
+
+        results = [onSale,thumbnail['src'],gameName,gamePrice,gameRating]
+
+        return results
+
+  def SaleCheck(self):
+    for div in self.site.find_all('div', class_='discount_prices'):
+        parent_classes = [c.get('class') for c in div.find_parents('div')]
+        if 'game_area_purchase_game_wrapper' in [c for classes in parent_classes for c in classes] and \
+           ['game_area_purchase_game_wrapper', 'dynamic_bundle_description', 'ds_no_flags'] not in parent_classes:
+            return True
+    return False
+

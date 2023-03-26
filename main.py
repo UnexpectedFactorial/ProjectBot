@@ -9,6 +9,7 @@ from discord.ext import commands
 from bs4 import BeautifulSoup
 
 from webScraping import Wiki
+from webScraping import Steam
 
 token = os.environ['TOKEN']  #discord bot token
 
@@ -39,21 +40,6 @@ def run():
   async def on_member_join(member):
     defaultrole = discord.utils.get(member.guild.roles, name="default")
     await member.add_roles(defaultrole)
-
-  @bot.event  #self-assign reaction
-  async def on_reaction_add(reaction, user):
-    message = reaction.message
-    if message.id == 1079854132816519189:
-      guild = message.guild
-      roles_dict = { #"Emotename": "Rolename"
-        ":red_square:": "red",
-        ":green_square:": "green",
-        ":blue_square:": "blue"
-      }
-      role_name = roles_dict.get(str(reaction.emoji))
-      if role_name is not None:
-        role = discord.utils.get(guild.roles, name=role_name)
-        await user.add_roles(role)
 
   @bot.command()
   async def purge(ctx, amount=10):
@@ -112,10 +98,7 @@ def run():
     input = Wiki(userInput)
     result = input.scrapeFromWiki(query)
     
-    if isinstance(result, list):
-      await ctx.send(result)
-    else:
-      await ctx.send(result)
+    await ctx.send(result)
 
   @bot.command()
   async def wikisearch(ctx, *, input):
@@ -141,6 +124,42 @@ def run():
     else:
       await ctx.send("Please only enter 2 arguments")
 
+  @bot.command(brief="Scrapes a Steam store page", description="This command grabs the price and reviews from a Steam store page and checks if there's a sale going on. A little less advanced than the inbuilt Discord imbeds.", help = "Please use this command with the following format. #steam [URL]")
+  async def steam(ctx, input):
+    
+    if input.startswith("https://store.steampowered.com/app/"):
+      
+      userInput = Steam(input)
+      results = userInput.initialCheck()
+    
+      if isinstance(results, list):
+        saleStatus = results[0]
+        thumbnail = results[1]
+        results.pop(0)
+        results.pop(0)
+        if saleStatus: #formatted results for games on sale
+          categories = ['Title: ','Price: ','Discounted Price: ', 'Discount Percent: ', 'Recent Reviews: ']
+          steamEmbed = discord.Embed(title="Steam Game Analysis",color= discord.Color.from_rgb( 50, 238, 58 ))
+          steamEmbed.set_thumbnail(url=thumbnail)
+          for i in range(len(results)):
+            steamEmbed.add_field(name=categories[i],value=results[i],inline=False)
+          await ctx.send(embed = steamEmbed)
+          
+        else: 
+          categories = ['Title: ', 'Price: ', 'Recent Reviews: ']
+          steamEmbed = discord.Embed(title="Steam Game Analysis",color= discord.Color.from_rgb(65,95,117))
+          steamEmbed.set_thumbnail(url=thumbnail)
+          for i in range(len(results)):
+            steamEmbed.add_field(name=categories[i],value=results[i],inline=False)
+          
+          await ctx.send(embed = steamEmbed)
+
+      else:
+        await ctx.send(results)
+
+    else:
+      await ctx.send("Invalid URL! Please input a game URL. Bundles are currently not supported!")
+      
   @bot.command()
   async def dog(ctx):
     r = requests.get(" https://dog.ceo/api/breeds/image/random")
