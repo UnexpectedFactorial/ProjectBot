@@ -19,6 +19,7 @@ PyDictionary = "^2.0.1"
 Wikipedia-API = "^0.5.8"
 certifi = "^2022.12.7"
 Werkzeug = "^2.2.3"
+wikipedia = "^1.4.0"
 
 [tool.poetry.dev-dependencies]
 debugpy = "^1.6.2"
