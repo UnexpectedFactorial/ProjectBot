@@ -3,6 +3,7 @@ import wikipedia
 from bs4 import BeautifulSoup
 
 
+
 class Scrape:
 
   def __init__(self, site):  #grabs site information once when class is created
@@ -151,3 +152,5 @@ class Custom(Scrape):
       return "Page not found! Please try again."
     else:
       return "Something went wrong! Please try again later."
+
+  

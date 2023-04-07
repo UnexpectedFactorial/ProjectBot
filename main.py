@@ -7,10 +7,11 @@ import wikipediaapi  # for wiki
 from PyDictionary import PyDictionary
 from discord.ext import commands
 
-from admin import AdminCommands
+#from admin import admin
 from webScraping import Wiki
 from webScraping import Steam
 from webScraping import Custom
+import yfinance as yf
 
 token = os.environ['TOKEN']  #discord bot token
 
@@ -22,7 +23,12 @@ def run():
   intents = discord.Intents.all()
 
   bot = commands.Bot(command_prefix="#", intents=intents)
-  bot.add_cog(AdminCommands(bot))
+  #bot.add_cog(admin(bot))
+
+  async def load(): #loads cog extension
+    for filename in os.listdir('./cogs'):
+      if filename.endswith('.py'):
+        pass
   
   @bot.event
   async def on_ready():
@@ -92,7 +98,13 @@ def run():
   #   await ctx.send(f"{member} has been muted.")
 
 
-  @bot.command()
+  @bot.command(
+    brief="Returns the first paragraph from a Wikipedia page",
+    description=
+    "This command searches Wikipedia and returns the first paragragh as a summary to the user.",
+    help=
+    "Please use this command with the following format. #wikiscrape [Word to Search]"
+  )
   async def wikiscrape(ctx, *, query="wikipedia"):
     userInput = f"https://en.wikipedia.org/wiki/{query}"
     input = Wiki(userInput)
@@ -185,7 +197,11 @@ def run():
       await ctx.send(
         "Invalid URL! Please input a game URL. Bundles are currently not supported!"
       )
-  @bot.command()
+  @bot.command(
+    brief="Grabs all text from a specified tag from a site",
+    description=
+    "This command will grab all the text from a tag and site you choose. Please make sure the tag you are specifying is a valid html tag ",
+    help="Please use this command with the following format. #tagsearch [URL], [TAG]")
   async def tagsearch(ctx,*,input):
     if ',' in input:
       argList = input.split(",")
@@ -204,7 +220,50 @@ def run():
       
     else:
       await ctx.send("Please insert a comma between your URL and the tag you want to search.")
+  @bot.command(
+    brief="Grabs stock information from Yahoo Finance",
+    description=
+    "This command will grab price information on a given company's stock ticker symbol with data sourced from Yahoo! Finance",
+    help="Please use this command with the following format. #ticker [SYMBOL]"
+  )
+  async def ticker(ctx,*,input):
 
+    try:
+      ticker = yf.Ticker(input).info
+    except AttributeError:
+      await ctx.send("The symbol you searched is invalid! Please check your symbol and try again. ")
+
+    source = ticker['quoteSourceName']
+    stockPrice = ticker['regularMarketPrice']
+    pastPrice = ticker['regularMarketPreviousClose']
+    priceChange = stockPrice - pastPrice
+    changePercent = round((priceChange/pastPrice)*100,2)
+    
+    if changePercent >= 0:
+      change = True
+    else:  
+        change = False
+    changePercent = f"{changePercent}%"
+
+    if change:
+      tickerEmbed = discord.Embed(title=ticker['shortName'],color=discord.Color.from_rgb(50, 238, 58)) 
+      
+    else:
+      tickerEmbed = discord.Embed(title=ticker['shortName'],color=discord.Color.from_rgb(238, 63, 63 ))
+      
+    tickerEmbed.add_field(name="Ticker Symbol:",value=ticker['symbol'],inline=False)
+    tickerEmbed.add_field(name="Current Price:",value=stockPrice,inline=True)
+    tickerEmbed.add_field(name="Yesterday's Price:",value=pastPrice,inline=True)
+    tickerEmbed.add_field(name="Today's Change:",value=changePercent,inline=True)
+    tickerEmbed.set_footer(text="Data sourced from Yahoo Finance. This information is provided as is.")
+    await ctx.send(embed=tickerEmbed)
+  @bot.command()
+  async def dog(ctx):
+    r = requests.get(" https://dog.ceo/api/breeds/image/random")
+    res = r.json()
+    em = discord.Embed()
+    em.set_image(url=res['message'])
+    await ctx.send(embed=em)
 
   @bot.command(alias=['w'], description="Shows the weather from a location")
   async def weather(ctx, *, place: str):
