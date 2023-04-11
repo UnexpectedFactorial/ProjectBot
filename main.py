@@ -1,34 +1,40 @@
 import os
+import random
 import settings
 import discord
 import requests  #for requests.get
 import wikipediaapi  # for wiki
+import asyncio
+# googlesearch also requires an additional module; pip install googlesearch-python (already installed)
+from googlesearch import search # for google
 
 from PyDictionary import PyDictionary
 from discord.ext import commands
 
-#from admin import admin
-from webScraping import Wiki
-from webScraping import Steam
-from webScraping import Custom
+from webScraping import *
 import yfinance as yf
 
-token = os.environ['TOKEN']  #discord bot token
+
 
 weatherkey = os.environ['weather']  #weather API Key
+
+rapidAPIkey = os.environ['rapidAPIkey'] # API key for currency / translation
 
 logger = settings.logging.getLogger("bot")
 
 def run():
   intents = discord.Intents.all()
-
+  token = os.environ['TOKEN']  #discord bot token
   bot = commands.Bot(command_prefix="#", intents=intents)
-  #bot.add_cog(admin(bot))
 
-  async def load(): #loads cog extension
-    for filename in os.listdir('./cogs'):
-      if filename.endswith('.py'):
-        pass
+  async def load(): #cog load
+    for filename in os.listdir("./cogs"):
+      if filename.endswith(".py"):
+        await bot.load_extension(f"cogs.{filename[:-3]}")
+
+  async def main():
+    await load()
+    await bot.start(token)
   
   @bot.event
   async def on_ready():
@@ -40,63 +46,6 @@ def run():
                hidden=True)
   async def ping(ctx):
     await ctx.send("I am Alive")
-
-  
-#administrative commands
-  
-  # @bot.event
-  # async def on_member_join(member):
-  #   defaultrole = discord.utils.get(member.guild.roles, name="default")
-  #   await member.add_roles(defaultrole)
-
-  # @bot.command()
-  # async def purge(ctx, amount=10):
-  #   await ctx.channel.purge(limit=amount + 1)
-  #   await ctx.send(f'{amount} messages successfully purged')
-
-  # def perms(**perms):
-
-  #   async def predicate(ctx):
-
-  #     #checks admin role
-  #     if ctx.author.guild_permissions.administrator:
-  #       return True
-
-  #     #checks  other role perms
-  #     for role in ctx.author.roles:
-  #       if role.permissions_in(ctx.channel).manage_channels:
-  #         return True
-
-  #     #role has no perms
-  #     raise commands.Missing.Permissions(perms)
-
-  #   return commands.check(predicate)
-
-  # @bot.command()
-  # @perms(kick_members=True)
-  # async def kick(ctx, member: discord.Member):
-  #   await member.kick()
-  #   await ctx.send(f"{member} has been kicked.")
-
-  # @bot.command()
-  # @perms(ban_members=True)
-  # async def ban(ctx, member: discord.Member):
-  #   await member.ban()
-  #   await ctx.send(f"{member} has been banned.")
-
-  # @bot.command()
-  # @perms(add_roles=True)
-  # async def mute(ctx, member: discord.Member
-  #                ):  #checks for muted role and creates if doesn't exist
-  #   role = discord.utils.get(ctx.guild.roles, name="Muted")
-  #   if not role:
-  #     role = await ctx.guild.create_role(name="Muted")
-  #     for channel in ctx.guild.channels:
-  #       await channel.set_permissions(role, send_messages=False)
-
-  #   await member.add_roles(role)
-  #   await ctx.send(f"{member} has been muted.")
-
 
   @bot.command(
     brief="Returns the first paragraph from a Wikipedia page",
@@ -233,7 +182,6 @@ def run():
     except AttributeError:
       await ctx.send("The symbol you searched is invalid! Please check your symbol and try again. ")
 
-    source = ticker['quoteSourceName']
     stockPrice = ticker['regularMarketPrice']
     pastPrice = ticker['regularMarketPreviousClose']
     priceChange = stockPrice - pastPrice
@@ -247,7 +195,6 @@ def run():
 
     if change:
       tickerEmbed = discord.Embed(title=ticker['shortName'],color=discord.Color.from_rgb(50, 238, 58)) 
-      
     else:
       tickerEmbed = discord.Embed(title=ticker['shortName'],color=discord.Color.from_rgb(238, 63, 63 ))
       
@@ -285,16 +232,85 @@ def run():
 
   @bot.command()
   async def google(ctx, *, arg):
-    arg = arg.replace(' ', '_').replace('  ', '_')
-    await ctx.send(f"https://www.google.com/search?q={arg}")
+    await ctx.send(f"Searched Term: {arg}")
+    for url in search(f'{arg}', stop=5):
+      await ctx.send(url)
 
   @bot.command()
   async def define(ctx, *, arg):
     dictionary = PyDictionary()
     result = dictionary.meaning(arg)
-    await ctx.send(f"{result}")
+    temp = discord.Embed(title = "Definition", description = result, colour = 0x5865F2)
+    await ctx.send(embed = temp)
 
-  bot.run(token, root_logger=True)
+  @bot.command()
+  async def poll(ctx, *, arg):
+    temp = discord.Embed(title = "Voting Poll", description = arg, colour = 0x5865F2)
+    sendresult = await ctx.send(embed = temp)
+    await sendresult.add_reaction("✅")
+    await sendresult.add_reaction("❌")
+
+  @bot.command()
+  async def translate(ctx, *, arg):
+  
+    url = "https://text-translator2.p.rapidapi.com/translate"
+    payload = f"source_language=auto&target_language=en&text={arg}"
+    headers = {
+	   "content-type": "application/x-www-form-urlencoded",
+	   "X-RapidAPI-Key": f"{rapidAPIkey}",
+	   "X-RapidAPI-Host": "text-translator2.p.rapidapi.com"
+}
+    response = requests.request("POST", url, data=str(payload).encode('utf-8'), headers=headers)
+    data = response.json()
+
+    temp = discord.Embed(title = "Autodetect Language Translation", description = data['data']['translatedText'], colour = 0x5865F2)
+    await ctx.send(embed = temp)
+
+  @bot.command()
+  async def currency(ctx, arg1, arg2, arg3):
+    url = "https://currency-converter-by-api-ninjas.p.rapidapi.com/v1/convertcurrency"
+
+    querystring = {"amount":{arg1},"have":{arg2},"want":{arg3}}
+
+    headers = {
+	   "X-RapidAPI-Key": f"{rapidAPIkey}",
+	   "X-RapidAPI-Host": "currency-converter-by-api-ninjas.p.rapidapi.com"
+    }
+
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    data = response.json()
+    oldAmount = (data['old_amount'])
+    newAmount = (data['new_amount'])
+    oldCurrency = (data['old_currency'])
+    newCurrency = (data['new_currency'])
+    temp = discord.Embed(title = "Currency Conversion", description = f"Original Currency: {oldCurrency}\nOriginal Value: {oldAmount}\nNew Currency: {newCurrency}\nConverted Value: {newAmount}\n", colour = 0x5865F2)
+    await ctx.send(embed = temp)
+
+  @bot.command()
+  async def randomfact(ctx):
+    fact = requests.get(f'https://uselessfacts.jsph.pl/api/v2/facts/random').json()
+    result = fact['text']
+    temp = discord.Embed(title = "Random Fact", description = result, colour = 0x5865F2)
+    await ctx.send(embed = temp)
+
+  @bot.command()
+  async def coinflip(ctx):
+    coin = random.randint(0, 1)
+    if coin == 0:
+      result = "Tails!"
+    if coin == 1:
+      result = "Heads!"
+    temp = discord.Embed(title = "Coin Flip", description = result, colour = 0x5865F2)
+    await ctx.send(embed = temp)
+
+  @bot.command()
+  async def roll(ctx, arg1: int):
+    roll = random.randint(1, arg1)
+    temp = discord.Embed(title = "Dice Roll", description = f"You roll a dice with {arg1} sides. The dice lands on {roll}.", colour = 0x5865F2)
+    await ctx.send(embed = temp)
+  
+  asyncio.run(main())
 
 if __name__ == "__main__":
   run()
+
