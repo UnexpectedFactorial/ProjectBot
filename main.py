@@ -5,7 +5,7 @@ import discord
 import requests  #for requests.get
 import wikipediaapi  # for wiki
 import asyncio
-# googlesearch also requires an additional module; pip install googlesearch-python (already installed)
+# googlesearch also requires an additional module; pip install googlesearch-python / pip install google (already installed for demo)
 from googlesearch import search # for google
 
 from PyDictionary import PyDictionary
@@ -182,8 +182,8 @@ def run():
     except AttributeError:
       await ctx.send("The symbol you searched is invalid! Please check your symbol and try again. ")
 
-    stockPrice = ticker['regularMarketPrice']
-    pastPrice = ticker['regularMarketPreviousClose']
+    stockPrice = ticker['currentPrice']
+    pastPrice = ticker['previousClose']
     priceChange = stockPrice - pastPrice
     changePercent = round((priceChange/pastPrice)*100,2)
     
@@ -204,7 +204,7 @@ def run():
     tickerEmbed.add_field(name="Today's Change:",value=changePercent,inline=True)
     tickerEmbed.set_footer(text="Data sourced from Yahoo Finance. This information is provided as is.")
     await ctx.send(embed=tickerEmbed)
-  @bot.command()
+  @bot.command(brief="Fetches a random image of a dog from an API", help="Usage: dog")
   async def dog(ctx):
     r = requests.get(" https://dog.ceo/api/breeds/image/random")
     res = r.json()
@@ -212,7 +212,7 @@ def run():
     em.set_image(url=res['message'])
     await ctx.send(embed=em)
 
-  @bot.command(alias=['w'], description="Shows the weather from a location")
+  @bot.command(alias=['w'], brief="Provides weather information from an API", description="Shows the weather from a location", help="Usage: weather {location}")
   async def weather(ctx, *, place: str):
     r = requests.get(
       f"http://api.weatherapi.com/v1/forecast.json?key={weatherkey}&q={place}&days=1&aqi=no&alerts=no"
@@ -221,7 +221,7 @@ def run():
     Temp = f"It is currently {res['current']['temp_c']} degrees right now and {res['current']['condition']['text']} in {place}."
     await ctx.send(Temp)
 
-  @bot.command()
+  @bot.command(brief="Uses API to display a summary of a Wikipedia article", help="Usage: wiki {searchterm}")
   async def wiki(ctx, *, arg):
     print(arg)
     wiki = wikipediaapi.Wikipedia('en')
@@ -230,27 +230,27 @@ def run():
     await ctx.send("Summary: %s" % result.summary)
     await ctx.send("Link to Page: %s" % result.fullurl)
 
-  @bot.command()
+  @bot.command(brief="Uses the GoogleSearch package to fetch 5 results", help="Usage: google {searchterm}")
   async def google(ctx, *, arg):
     await ctx.send(f"Searched Term: {arg}")
     for url in search(f'{arg}', stop=5):
       await ctx.send(url)
 
-  @bot.command()
+  @bot.command(brief="Fetches the definition for a given word", help="Usage: define {word}")
   async def define(ctx, *, arg):
     dictionary = PyDictionary()
     result = dictionary.meaning(arg)
     temp = discord.Embed(title = "Definition", description = result, colour = 0x5865F2)
     await ctx.send(embed = temp)
 
-  @bot.command()
+  @bot.command(brief="Creates a poll with Yes/No voting options", help="Usage: poll {question}")
   async def poll(ctx, *, arg):
     temp = discord.Embed(title = "Voting Poll", description = arg, colour = 0x5865F2)
     sendresult = await ctx.send(embed = temp)
     await sendresult.add_reaction("✅")
     await sendresult.add_reaction("❌")
 
-  @bot.command()
+  @bot.command(brief="Auto translates a given word from an API", help="Usage: translate {word/sentence}")
   async def translate(ctx, *, arg):
   
     url = "https://text-translator2.p.rapidapi.com/translate"
@@ -266,7 +266,7 @@ def run():
     temp = discord.Embed(title = "Autodetect Language Translation", description = data['data']['translatedText'], colour = 0x5865F2)
     await ctx.send(embed = temp)
 
-  @bot.command()
+  @bot.command(brief="Converts currency to another using 3 arguments", help="Usage: currency {amountToConvert} {baseCurrency} {newCurrency}")
   async def currency(ctx, arg1, arg2, arg3):
     url = "https://currency-converter-by-api-ninjas.p.rapidapi.com/v1/convertcurrency"
 
@@ -286,14 +286,14 @@ def run():
     temp = discord.Embed(title = "Currency Conversion", description = f"Original Currency: {oldCurrency}\nOriginal Value: {oldAmount}\nNew Currency: {newCurrency}\nConverted Value: {newAmount}\n", colour = 0x5865F2)
     await ctx.send(embed = temp)
 
-  @bot.command()
+  @bot.command(brief="Generates a random fact from an API", help="Usage: randomfact")
   async def randomfact(ctx):
     fact = requests.get(f'https://uselessfacts.jsph.pl/api/v2/facts/random').json()
     result = fact['text']
     temp = discord.Embed(title = "Random Fact", description = result, colour = 0x5865F2)
     await ctx.send(embed = temp)
 
-  @bot.command()
+  @bot.command(brief="Flips a coin and shows the result", help="Usage: coinflip")
   async def coinflip(ctx):
     coin = random.randint(0, 1)
     if coin == 0:
@@ -303,14 +303,14 @@ def run():
     temp = discord.Embed(title = "Coin Flip", description = result, colour = 0x5865F2)
     await ctx.send(embed = temp)
 
-  @bot.command()
+  @bot.command(brief="Roll a dice with a given amount of sides", help="Usage: roll {numberofsides}")
   async def roll(ctx, arg1: int):
     roll = random.randint(1, arg1)
     temp = discord.Embed(title = "Dice Roll", description = f"You roll a dice with {arg1} sides. The dice lands on {roll}.", colour = 0x5865F2)
     await ctx.send(embed = temp)
   
   asyncio.run(main())
-
+  # bot.run(token, root_logger=True)
 if __name__ == "__main__":
   run()
 

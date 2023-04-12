@@ -49,7 +49,7 @@ class admin(commands.Cog):
 
 
   @commands.command()
-  @commands.has_permissions(add_roles=True)
+  @commands.has_permissions(manage_roles=True)
   async def mute(self, ctx, member: discord.Member):  #checks for muted role and creates if doesn't exist
     role = discord.utils.get(ctx.guild.roles, name="Muted")
     if not role:
