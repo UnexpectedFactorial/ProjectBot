@@ -24,7 +24,7 @@ Currently, the bot contains the following commands:
 
 `steam`
 
-#Commands calling APIs
+# Commands calling APIs
 `currency`
 
 `define`
